@@ -349,53 +349,27 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.8);
-      border: 2px solid rgba(255, 0, 150, 0.6);
-      border-radius: 10px;
-      padding: 20px 30px;
       text-align: center;
       z-index: 1000;
-      backdrop-filter: blur(10px);
     }
 
     .loading-text {
       color: #fff;
       font-family: 'Courier New', monospace;
-      font-size: 16px;
-      margin-bottom: 15px;
-      text-shadow: 0 0 10px rgba(255, 0, 150, 0.8);
+      font-size: 24px;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+      animation: loadingPulse 2s ease-in-out infinite;
     }
 
-    .loading-progress {
-      width: 200px;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
-    .loading-bar {
-      height: 100%;
-      background: linear-gradient(90deg, #ff0096, #00ffff, #ff0096);
-      background-size: 200% 100%;
-      animation: loadingProgress 2s ease-in-out infinite, loadingGradient 1s linear infinite;
-      width: 0%;
-      transition: width 0.3s ease;
-    }
-
-    @keyframes loadingProgress {
-      0% { width: 0%; }
-      100% { width: 100%; }
-    }
-
-    @keyframes loadingGradient {
-      0% { background-position: 0% 50%; }
-      100% { background-position: 200% 50%; }
+    @keyframes loadingPulse {
+      0% { opacity: 0.6; }
+      50% { opacity: 1; }
+      100% { opacity: 0.6; }
     }
   </style>
 </head>
 <body>
-  <div class="start-button-container">
+  <div class="start-button-container" style="display: none;">
     <button id="startButton" class="big-start-button" onclick="toggleStart()">
       <span class="button-text">START</span>
       <span class="button-glow"></span>
@@ -414,9 +388,6 @@
   <!-- Loading indicator -->
   <div id="loadingIndicator" class="loading-indicator">
     <div class="loading-text">Loading memes...</div>
-    <div class="loading-progress">
-      <div class="loading-bar"></div>
-    </div>
   </div>
 
   <script src="audio-analysis.js"></script>
@@ -462,8 +433,8 @@
       console.log("🖼️ Creating and preloading all image elements...");
       let loadedCount = 0;
       const loadingIndicator = document.getElementById('loadingIndicator');
-      const loadingBar = document.querySelector('.loading-bar');
       const loadingText = document.querySelector('.loading-text');
+      const startButtonContainer = document.querySelector('.start-button-container');
       
       // Create container for all images
       const imageContainer = document.createElement('div');
@@ -502,30 +473,20 @@
         
         img.onload = () => {
           loadedCount++;
-          
-          // Update progress
-          const progress = Math.round((loadedCount / total) * 100);
-          console.log(`📸 Loaded ${loadedCount}/${total} images (${progress}%)`);
-          
-          // Update loading indicator
-          loadingBar.style.width = `${progress}%`;
-          loadingText.textContent = `Loading memes... ${loadedCount}/${total}`;
+          console.log(`📸 Loaded ${loadedCount}/${total} images`);
           
           if (loadedCount === total) {
             imagesPreloaded = true;
             console.log("✅ All images loaded! Ready for instant transitions.");
             
-            // Show first image with proper z-index
-            showImage(1);
-            
-            // Hide loading indicator with fade out
-            loadingText.textContent = "Ready!";
+            // Hide loading indicator
+            loadingIndicator.style.opacity = '0';
             setTimeout(() => {
-              loadingIndicator.style.opacity = '0';
-              setTimeout(() => {
-                loadingIndicator.style.display = 'none';
-              }, 500);
-            }, 1000);
+              loadingIndicator.style.display = 'none';
+              
+              // Show start button
+              startButtonContainer.style.display = 'block';
+            }, 500);
           }
         };
         
@@ -533,26 +494,18 @@
           console.warn(`⚠️ Failed to load image: ${getImagePath(i)}`);
           loadedCount++;
           
-          // Update progress even for failed images
-          const progress = Math.round((loadedCount / total) * 100);
-          loadingBar.style.width = `${progress}%`;
-          loadingText.textContent = `Loading memes... ${loadedCount}/${total}`;
-          
           if (loadedCount === total) {
             imagesPreloaded = true;
             console.log("✅ Image loading completed (with some errors).");
             
-            // Show first available image with proper z-index
-            showImage(1);
-            
             // Hide loading indicator
-            loadingText.textContent = "Ready!";
+            loadingIndicator.style.opacity = '0';
             setTimeout(() => {
-              loadingIndicator.style.opacity = '0';
-              setTimeout(() => {
-                loadingIndicator.style.display = 'none';
-              }, 500);
-            }, 1000);
+              loadingIndicator.style.display = 'none';
+              
+              // Show start button
+              startButtonContainer.style.display = 'block';
+            }, 500);
           }
         };
       }
@@ -661,6 +614,9 @@
         startButton.classList.remove('stopped');
         startButton.classList.add('playing');
         startButton.querySelector('.button-text').textContent = 'PAUSE';
+        
+        // Show first image
+        showImage(1);
         
         // Hide button after a short delay
         setTimeout(() => {
