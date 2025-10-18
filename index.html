@@ -422,7 +422,7 @@
       }
       
       // Reset all effects (preserve centering)
-      image.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg) translate(0px, 0px)';
+      image.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg)';
       image.style.filter = 'brightness(1) contrast(1) saturate(1) hue-rotate(0deg) blur(0px)';
       image.style.boxShadow = '0 0 20px rgba(255, 0, 150, 0.3)'; // Default glow
       image.style.animation = 'none';
@@ -764,29 +764,8 @@
       const rhythmHue = (rhythmSpeed - 1.0) * 40 * (Math.random() > 0.5 ? 1 : -1); // Rhythm-based hue
       const hueShift = bpmHue + energyHue + rhythmHue;
       
-      // POSITION: Musical movement based on multiple factors
-      const screenWidth = window.innerWidth;
-      const screenHeight = window.innerHeight;
-      const maxOffsetX = (screenWidth - 400) / 4;
-      const maxOffsetY = (screenHeight - 400) / 4;
-      
-      // Energy-based movement
-      const energyX = (Math.random() - 0.5) * maxOffsetX * energy;
-      const energyY = (Math.random() - 0.5) * maxOffsetY * energy;
-      
-      // BPM-based movement
-      const bpmX = (Math.random() - 0.5) * maxOffsetX * ((bpm - 100) / 200);
-      const bpmY = (Math.random() - 0.5) * maxOffsetY * ((bpm - 100) / 200);
-      
-      // Rhythm-based movement
-      const rhythmX = (Math.random() - 0.5) * maxOffsetX * (rhythmSpeed - 1.0);
-      const rhythmY = (Math.random() - 0.5) * maxOffsetY * (rhythmSpeed - 1.0);
-      
-      const randomX = energyX + bpmX + rhythmX;
-      const randomY = energyY + bpmY + rhythmY;
-      
-      // Apply extreme transforms (preserve centering)
-      newImage.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${rotation}deg) translate(${randomX}px, ${randomY}px)`;
+      // Apply transforms (keep centered - no position movement)
+      newImage.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${rotation}deg)`;
       newImage.style.filter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) hue-rotate(${hueShift}deg)`;
       
       // Musical glow effects based on energy and BPM
@@ -843,7 +822,7 @@
       
       // Reset effects after a short time
       effectTimeouts[index] = setTimeout(() => {
-        newImage.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg) translate(0px, 0px)';
+        newImage.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg)';
         newImage.style.filter = 'brightness(1) contrast(1) saturate(1) hue-rotate(0deg) blur(0px)';
         newImage.style.boxShadow = '0 0 20px rgba(255, 0, 150, 0.3)'; // Reset to default glow
         newImage.style.animation = 'none';
