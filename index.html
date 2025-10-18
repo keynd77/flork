@@ -801,6 +801,11 @@
       const beatResponseScale = beatType === 'strong' ? 1.8 : 1.0; // Extra boost for strong beats (1.8x - was 1.25x) - EXTREME
       const musicIntensityScale = 1 + (Math.min(0.8, (energy * intensity * (rhythmSpeed - 1.0)))); // Music intensity multiplier (0.8x - was 0.4x) - EXTREME
       
+      // VOLUME-BASED SCALING - Direct response to music volume/energy
+      const volumeScale = 1 + (energy * 2.5); // Volume-based scaling (2.5x range) - DIRECT VOLUME RESPONSE
+      const volumePeakScale = energy > 0.6 ? 1.5 : 1.0; // Extra boost for high volume (1.5x)
+      const volumeBassScale = energy > 0.4 ? 1.3 : 1.0; // Boost for medium-high volume (1.3x)
+      
       // EXTREME PEAK DETECTION - Massive scaling boost for peak notes
       const peakThreshold = 0.6; // Lower threshold for more responsive peaks (was 0.7)
       const isPeak = energy > peakThreshold || intensity > peakThreshold || (energy > 0.5 && intensity > 0.5);
@@ -816,7 +821,7 @@
       const isRhythmPeak = rhythmSpeed > rhythmPeakThreshold && (energy > 0.4 || intensity > 0.4);
       const rhythmPeakScale = isRhythmPeak ? 2.5 : 1.0; // 2.5x scaling boost during rhythm peaks (was 1.8x)
       
-      const scale = energyScale * bpmScale * intensityScale * rhythmScale * beatTypeScale * intervalScale * glowBasedScale * beatResponseScale * musicIntensityScale * peakScale * ultraPeakScale * rhythmPeakScale;
+      const scale = energyScale * bpmScale * intensityScale * rhythmScale * beatTypeScale * intervalScale * glowBasedScale * beatResponseScale * musicIntensityScale * volumeScale * volumePeakScale * volumeBassScale * peakScale * ultraPeakScale * rhythmPeakScale;
         
       // EXTREME BRIGHTNESS & CONTRAST: Much more aggressive for fast music
       const energyBrightness = 1 + (energy * 1.0); // Energy-based brightness (1.0x range - was 0.5x)
@@ -865,10 +870,13 @@
       
       // Debug logging for scaling and rotation (after all variables are declared)
       if (Math.floor(currentTime) !== Math.floor(currentTime - 0.1)) {
-        console.log(`📏 Scaling - Energy: ${energyScale.toFixed(2)}, BPM: ${bpmScale.toFixed(2)}, Intensity: ${intensityScale.toFixed(2)}, Rhythm: ${rhythmScale.toFixed(2)}, Beat: ${beatTypeScale.toFixed(2)}, Glow: ${glowBasedScale.toFixed(2)}, Peak: ${peakScale.toFixed(2)}, Ultra: ${ultraPeakScale.toFixed(2)}, Final: ${scale.toFixed(2)}`);
+        console.log(`📏 Scaling - Energy: ${energyScale.toFixed(2)}, BPM: ${bpmScale.toFixed(2)}, Intensity: ${intensityScale.toFixed(2)}, Rhythm: ${rhythmScale.toFixed(2)}, Beat: ${beatTypeScale.toFixed(2)}, Glow: ${glowBasedScale.toFixed(2)}, Volume: ${volumeScale.toFixed(2)}, VolPeak: ${volumePeakScale.toFixed(2)}, VolBass: ${volumeBassScale.toFixed(2)}, Peak: ${peakScale.toFixed(2)}, Ultra: ${ultraPeakScale.toFixed(2)}, Final: ${scale.toFixed(2)}`);
         console.log(`🌀 Rotation - Beat: ${beatRotation.toFixed(1)}°, BPM: ${bpmRotation.toFixed(1)}°, Energy: ${energyRotation.toFixed(1)}°, Rhythm: ${rhythmRotation.toFixed(1)}°, BeatType: ${beatTypeRotation.toFixed(1)}°, Peak: ${peakRotation.toFixed(1)}°, Ultra: ${ultraPeakRotation.toFixed(1)}°, Final: ${rotation.toFixed(1)}°`);
         if (isPeak || isUltraPeak || isRhythmPeak) {
           console.log(`🚀 PEAK DETECTED! - Energy: ${energy.toFixed(3)}, Intensity: ${intensity.toFixed(3)}, Rhythm: ${rhythmSpeed.toFixed(2)}, Peak: ${isPeak}, Ultra: ${isUltraPeak}, Rhythm: ${isRhythmPeak}`);
+        }
+        if (energy > 0.6) {
+          console.log(`🔊 HIGH VOLUME! - Energy: ${energy.toFixed(3)}, Volume Scale: ${volumeScale.toFixed(2)}, Volume Peak: ${volumePeakScale.toFixed(2)}`);
         }
       }
       
