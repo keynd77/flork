@@ -882,10 +882,10 @@
         const intensitySpeed = 1 / (intensity * 3); // Much more aggressive intensity speed (3x - was 2x)
         const energySpeed = 1 / (energy * 2.5); // Much more aggressive energy speed (2.5x - was 1.5x)
         const bpmSpeed = 1 / ((bpm - 135) / 100 + 1); // BPM affects speed (centered on 135)
-        const rhythmSpeed = 1 / (rhythmSpeed * 1.2); // Much more aggressive rhythm speed (1.2x - was 0.8x)
+        const rhythmSpeedMultiplier = 1 / (rhythmSpeed * 1.2); // Much more aggressive rhythm speed (1.2x - was 0.8x)
         const beatTypeSpeed = beatType === 'strong' ? 0.5 : 1.0; // Strong beats MUCH faster (0.5x - was 0.7x)
         
-        const combinedSpeed = (intensitySpeed + energySpeed + bpmSpeed + rhythmSpeed) / 4;
+        const combinedSpeed = (intensitySpeed + energySpeed + bpmSpeed + rhythmSpeedMultiplier) / 4;
         const animationSpeed = baseSpeed * combinedSpeed * beatTypeSpeed;
         
         // EXTREME animation selection based on multiple factors
