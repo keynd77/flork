@@ -830,10 +830,24 @@
       const isRhythmPeak = rhythmSpeed > rhythmPeakThreshold && (energy > 0.3 || intensity > 0.3);
       const rhythmPeakScale = isRhythmPeak ? 4.0 : 1.0; // 4.0x scaling boost during rhythm peaks (was 2.5x)
       
-      let scale = energyScale * bpmScale * intensityScale * rhythmScale * beatTypeScale * intervalScale * glowBasedScale * beatResponseScale * musicIntensityScale * volumeScale * volumePeakScale * volumeBassScale * intensityJumpScale * rhythmJumpScale * bpmJumpScale * intervalJumpScale * peakScale * ultraPeakScale * rhythmPeakScale;
+      // Calculate base scale from main factors (more reasonable)
+      let baseScale = (energyScale + bpmScale + intensityScale + rhythmScale) / 4; // Average of main factors
       
-      // Ensure minimum scaling is always visible
-      scale = Math.max(1.2, scale); // Minimum 1.2x scaling so it's always noticeable
+      // Apply multipliers for special conditions
+      if (beatType === 'strong') baseScale *= beatTypeScale;
+      if (interval && interval < 0.3) baseScale *= intervalScale;
+      if (energy > 0.6) baseScale *= volumePeakScale;
+      if (intensity > 0.8) baseScale *= intensityJumpScale;
+      if (rhythmSpeed > 20) baseScale *= rhythmJumpScale;
+      if (isPeak) baseScale *= peakScale;
+      if (isUltraPeak) baseScale *= ultraPeakScale;
+      if (isRhythmPeak) baseScale *= rhythmPeakScale;
+      
+      // Apply volume scaling
+      baseScale *= volumeScale;
+      
+      // Cap the maximum scale to prevent extreme values
+      let scale = Math.max(1.2, Math.min(8.0, baseScale)); // Between 1.2x and 8.0x
         
       // EXTREME BRIGHTNESS & CONTRAST: Much more aggressive for fast music
       const energyBrightness = 1 + (energy * 1.0); // Energy-based brightness (1.0x range - was 0.5x)
@@ -883,11 +897,11 @@
       // Debug logging for scaling and rotation (after all variables are declared)
       if (Math.floor(currentTime) !== Math.floor(currentTime - 0.1)) {
         console.log(`📏 SCALING BREAKDOWN:`);
-        console.log(`   Energy: ${energyScale.toFixed(2)}x | BPM: ${bpmScale.toFixed(2)}x | Intensity: ${intensityScale.toFixed(2)}x | Rhythm: ${rhythmScale.toFixed(2)}x`);
-        console.log(`   Beat: ${beatTypeScale.toFixed(2)}x | Glow: ${glowBasedScale.toFixed(2)}x | Volume: ${volumeScale.toFixed(2)}x | VolPeak: ${volumePeakScale.toFixed(2)}x`);
+        console.log(`   Base Factors: Energy: ${energyScale.toFixed(2)}x | BPM: ${bpmScale.toFixed(2)}x | Intensity: ${intensityScale.toFixed(2)}x | Rhythm: ${rhythmScale.toFixed(2)}x`);
+        console.log(`   Base Scale: ${baseScale.toFixed(2)}x | Volume: ${volumeScale.toFixed(2)}x | Beat: ${beatTypeScale.toFixed(2)}x`);
         console.log(`   🚀 JUMP SCALES: IntJump: ${intensityJumpScale.toFixed(1)}x | RhythmJump: ${rhythmJumpScale.toFixed(1)}x | BPMJump: ${bpmJumpScale.toFixed(1)}x | IntJump: ${intervalJumpScale.toFixed(1)}x`);
         console.log(`   Peak: ${peakScale.toFixed(2)}x | Ultra: ${ultraPeakScale.toFixed(2)}x | RhythmPeak: ${rhythmPeakScale.toFixed(2)}x`);
-        console.log(`   🎯 FINAL SCALE: ${scale.toFixed(2)}x (${(scale * 100).toFixed(0)}% of original size)`);
+        console.log(`   🎯 FINAL SCALE: ${scale.toFixed(2)}x (${(scale * 100).toFixed(0)}% of original size) - CAPPED at 8.0x max`);
         console.log(`🌀 Rotation - Beat: ${beatRotation.toFixed(1)}°, BPM: ${bpmRotation.toFixed(1)}°, Energy: ${energyRotation.toFixed(1)}°, Rhythm: ${rhythmRotation.toFixed(1)}°, BeatType: ${beatTypeRotation.toFixed(1)}°, Peak: ${peakRotation.toFixed(1)}°, Ultra: ${ultraPeakRotation.toFixed(1)}°, Final: ${rotation.toFixed(1)}°`);
         if (isPeak || isUltraPeak || isRhythmPeak) {
           console.log(`🚀 PEAK DETECTED! - Energy: ${energy.toFixed(3)}, Intensity: ${intensity.toFixed(3)}, Rhythm: ${rhythmSpeed.toFixed(2)}, Peak: ${isPeak}, Ultra: ${isUltraPeak}, Rhythm: ${isRhythmPeak}`);
@@ -1002,14 +1016,17 @@
         newImage.style.animation = 'none';
       }
       
-      // Reset effects after a short time
+      // Reset effects after a longer time to allow scaling to be visible
       effectTimeouts[index] = setTimeout(() => {
-        newImage.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg)';
-        newImage.style.filter = 'brightness(1) contrast(1) saturate(1) hue-rotate(0deg) blur(0px)';
-        newImage.style.boxShadow = '0 0 20px rgba(255, 0, 150, 0.3)'; // Reset to default glow
-        newImage.style.animation = 'none';
+        // Only reset if this image is no longer the current visible image
+        if (currentVisibleImage !== newImage) {
+          newImage.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg)';
+          newImage.style.filter = 'brightness(1) contrast(1) saturate(1) hue-rotate(0deg) blur(0px)';
+          newImage.style.boxShadow = '0 0 20px rgba(255, 0, 150, 0.3)'; // Reset to default glow
+          newImage.style.animation = 'none';
+        }
         delete effectTimeouts[index];
-      }, 300);
+      }, 2000); // Increased from 300ms to 2000ms (2 seconds)
     }
   </script>
 </body>
