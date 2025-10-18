@@ -392,7 +392,7 @@
 
   <script src="audio-analysis.js"></script>
   <script>
-    const total = 141;
+    const total = 142;
     let index = 1;
     const startButton = document.getElementById("startButton");
     let audio = null;
@@ -616,11 +616,9 @@
         // Show first image
         showImage(1);
         
-        // Hide button after a short delay
-        setTimeout(() => {
-          startButton.style.opacity = '0';
-          startButton.style.pointerEvents = 'none';
-        }, 1000);
+        // Hide button container immediately
+        const buttonContainer = document.querySelector('.start-button-container');
+        buttonContainer.style.display = 'none';
         
         // Start rhythm-based image changes
         startRhythmDisplay();
@@ -661,7 +659,9 @@
         clearImageEffects(i);
       }
       
-      // Show button again
+      // Show button container and button again
+      const buttonContainer = document.querySelector('.start-button-container');
+      buttonContainer.style.display = 'block';
       startButton.style.opacity = '1';
       startButton.style.pointerEvents = 'auto';
       startButton.classList.remove('playing');
@@ -830,6 +830,10 @@
       const isRhythmPeak = rhythmSpeed > rhythmPeakThreshold && (energy > 0.3 || intensity > 0.3);
       const rhythmPeakScale = isRhythmPeak ? 4.0 : 1.0; // 4.0x scaling boost during rhythm peaks (was 2.5x)
       
+      // RHYTHM GLOW-BASED SCALING - Use the same calculation as glow effects for individual image scaling
+      const rhythmGlowScale = 1 + ((rhythmSpeed - 1.0) * 0.5); // Same as rhythmGlow but converted to scale multiplier (0.5x range)
+      const rhythmGlowPeakScale = rhythmSpeed > 2.0 ? 1.8 : (rhythmSpeed > 1.5 ? 1.4 : 1.0); // Extra boost for high rhythm speed
+      
       // Calculate base scale from main factors (more reasonable)
       let baseScale = (energyScale + bpmScale + intensityScale + rhythmScale) / 4; // Average of main factors
       
@@ -842,6 +846,10 @@
       if (isPeak) baseScale *= peakScale;
       if (isUltraPeak) baseScale *= ultraPeakScale;
       if (isRhythmPeak) baseScale *= rhythmPeakScale;
+      
+      // Apply rhythm glow-based scaling (same as glow effects)
+      baseScale *= rhythmGlowScale;
+      if (rhythmSpeed > 1.5) baseScale *= rhythmGlowPeakScale;
       
       // Apply volume scaling
       baseScale *= volumeScale;
@@ -899,6 +907,7 @@
         console.log(`📏 SCALING BREAKDOWN:`);
         console.log(`   Base Factors: Energy: ${energyScale.toFixed(2)}x | BPM: ${bpmScale.toFixed(2)}x | Intensity: ${intensityScale.toFixed(2)}x | Rhythm: ${rhythmScale.toFixed(2)}x`);
         console.log(`   Base Scale: ${baseScale.toFixed(2)}x | Volume: ${volumeScale.toFixed(2)}x | Beat: ${beatTypeScale.toFixed(2)}x`);
+        console.log(`   🌟 RHYTHM GLOW SCALING: RhythmGlow: ${rhythmGlowScale.toFixed(2)}x | RhythmGlowPeak: ${rhythmGlowPeakScale.toFixed(2)}x | RhythmSpeed: ${rhythmSpeed.toFixed(2)}`);
         console.log(`   🚀 JUMP SCALES: IntJump: ${intensityJumpScale.toFixed(1)}x | RhythmJump: ${rhythmJumpScale.toFixed(1)}x | BPMJump: ${bpmJumpScale.toFixed(1)}x | IntJump: ${intervalJumpScale.toFixed(1)}x`);
         console.log(`   Peak: ${peakScale.toFixed(2)}x | Ultra: ${ultraPeakScale.toFixed(2)}x | RhythmPeak: ${rhythmPeakScale.toFixed(2)}x`);
         console.log(`   🎯 FINAL SCALE: ${scale.toFixed(2)}x (${(scale * 100).toFixed(0)}% of original size) - CAPPED at 8.0x max`);
@@ -1028,6 +1037,24 @@
         delete effectTimeouts[index];
       }, 2000); // Increased from 300ms to 2000ms (2 seconds)
     }
+
+    // Add click event listener to the entire screen for pause functionality
+    document.addEventListener('click', function(event) {
+      // Only pause if we're currently playing and the click is not on the start button
+      if (isPlaying && !event.target.closest('#startButton')) {
+        pause();
+      }
+    });
+
+    // Initialize the page - show start button after images are loaded
+    function initializePage() {
+      // Show start button
+      const buttonContainer = document.querySelector('.start-button-container');
+      buttonContainer.style.display = 'block';
+    }
+
+    // Initialize when page loads
+    initializePage();
   </script>
 </body>
 </html>
