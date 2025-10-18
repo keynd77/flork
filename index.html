@@ -686,6 +686,33 @@
       const rhythmSpeed = audioState.rhythmSpeed;
       const interval = audioState.interval;
       
+      // SILENCE DETECTION - Check if no sound is playing
+      const silenceThreshold = 0.01; // Very low energy indicates silence
+      const isSilent = energy < silenceThreshold && intensity < 0.05;
+      
+      if (isSilent) {
+        console.log(`🔇 SILENCE DETECTED - Time: ${currentTime.toFixed(1)}s, Energy: ${energy.toFixed(3)}, Intensity: ${intensity.toFixed(3)}`);
+        
+        // During silence, fade out the current image and don't change images
+        if (currentVisibleImage) {
+          currentVisibleImage.style.opacity = '0.3'; // Fade to 30% opacity during silence
+          currentVisibleImage.style.filter = 'brightness(0.5) contrast(0.7) saturate(0.5)'; // Make it more subtle
+          currentVisibleImage.style.boxShadow = '0 0 10px rgba(255, 0, 150, 0.1)'; // Very subtle glow
+          currentVisibleImage.style.animation = 'none'; // Stop animations during silence
+        }
+        
+        // Continue the loop but don't change images
+        animationId = requestAnimationFrame(startRhythmDisplay);
+        return;
+      }
+      
+      // RESTORE IMAGE VISIBILITY when sound returns
+      if (currentVisibleImage && currentVisibleImage.style.opacity === '0.3') {
+        currentVisibleImage.style.opacity = '1'; // Restore full opacity
+        currentVisibleImage.style.filter = 'brightness(1) contrast(1) saturate(1)'; // Restore normal appearance
+        currentVisibleImage.style.boxShadow = '0 0 20px rgba(255, 0, 150, 0.3)'; // Restore normal glow
+      }
+      
       console.log(`🎵 Rhythm display running - Time: ${currentTime.toFixed(1)}s, Intensity: ${intensity.toFixed(3)}, Energy: ${energy.toFixed(3)}`);
       
       // EXTREME MUSICAL TIMING - Much more aggressive for fast music
