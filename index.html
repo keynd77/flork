@@ -432,6 +432,7 @@
     let allImageElements = [];
     let currentVisibleImage = null;
     let effectTimeouts = {}; // Store timeouts for each image to clear them
+    let currentZIndex = 100; // Starting z-index for images (above container z-index: 10)
 
     // Generate the correct filename based on index
     function getImagePath(index) {
@@ -473,6 +474,7 @@
       imageContainer.style.width = '100%';
       imageContainer.style.height = '100%';
       imageContainer.style.pointerEvents = 'none';
+      imageContainer.style.zIndex = '10'; // Above scanlines (2) but below loading indicator (1000)
       document.body.appendChild(imageContainer);
       
       for (let i = 1; i <= total; i++) {
@@ -492,6 +494,7 @@
         img.style.transition = 'all 0.4s ease';
         img.style.borderRadius = '10px';
         img.style.boxShadow = '0 0 20px rgba(255, 0, 150, 0.3)';
+        img.style.zIndex = currentZIndex + i; // Each image gets a unique z-index
         
         // Add to container
         imageContainer.appendChild(img);
@@ -512,7 +515,7 @@
             imagesPreloaded = true;
             console.log("✅ All images loaded! Ready for instant transitions.");
             
-            // Show first image
+            // Show first image with proper z-index
             showImage(1);
             
             // Hide loading indicator with fade out
@@ -539,7 +542,7 @@
             imagesPreloaded = true;
             console.log("✅ Image loading completed (with some errors).");
             
-            // Show first available image
+            // Show first available image with proper z-index
             showImage(1);
             
             // Hide loading indicator
@@ -576,6 +579,10 @@
       if (newImage) {
         // Clear any existing effects on the new image
         clearImageEffects(imageIndex);
+        
+        // Ensure this image has the highest z-index
+        currentZIndex += 1;
+        newImage.style.zIndex = currentZIndex;
         
         newImage.style.display = 'block';
         setTimeout(() => {
