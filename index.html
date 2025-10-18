@@ -263,32 +263,32 @@
     /* Gentle pulse animation for musical moments */
     @keyframes extremePulse {
       0% { 
-        transform: scale(1) rotate(0deg);
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
         filter: brightness(1) contrast(1) saturate(1);
       }
       50% { 
-        transform: scale(1.02) rotate(0.5deg);
+        transform: translate(-50%, -50%) scale(1.02) rotate(0.5deg);
         filter: brightness(1.1) contrast(1.05) saturate(1.1);
       }
       100% { 
-        transform: scale(0.98) rotate(-0.5deg);
+        transform: translate(-50%, -50%) scale(0.98) rotate(-0.5deg);
         filter: brightness(0.95) contrast(1.02) saturate(0.95);
       }
     }
 
-    /* Extreme glitch effect for maximum intensity */
+    /* Extreme glitch effect for maximum intensity - PRESERVE CENTERING */
     @keyframes extremeGlitch {
-      0% { transform: translate(0) rotate(0deg); }
-      10% { transform: translate(-3px, 3px) rotate(1deg); }
-      20% { transform: translate(-3px, -3px) rotate(-1deg); }
-      30% { transform: translate(3px, 3px) rotate(1deg); }
-      40% { transform: translate(3px, -3px) rotate(-1deg); }
-      50% { transform: translate(-2px, 2px) rotate(0.5deg); }
-      60% { transform: translate(2px, -2px) rotate(-0.5deg); }
-      70% { transform: translate(-1px, 1px) rotate(0.2deg); }
-      80% { transform: translate(1px, -1px) rotate(-0.2deg); }
-      90% { transform: translate(0, 0) rotate(0deg); }
-      100% { transform: translate(0) rotate(0deg); }
+      0% { transform: translate(-50%, -50%) translate(0) rotate(0deg); }
+      10% { transform: translate(-50%, -50%) translate(-3px, 3px) rotate(1deg); }
+      20% { transform: translate(-50%, -50%) translate(-3px, -3px) rotate(-1deg); }
+      30% { transform: translate(-50%, -50%) translate(3px, 3px) rotate(1deg); }
+      40% { transform: translate(-50%, -50%) translate(3px, -3px) rotate(-1deg); }
+      50% { transform: translate(-50%, -50%) translate(-2px, 2px) rotate(0.5deg); }
+      60% { transform: translate(-50%, -50%) translate(2px, -2px) rotate(-0.5deg); }
+      70% { transform: translate(-50%, -50%) translate(-1px, 1px) rotate(0.2deg); }
+      80% { transform: translate(-50%, -50%) translate(1px, -1px) rotate(-0.2deg); }
+      90% { transform: translate(-50%, -50%) translate(0, 0) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) translate(0) rotate(0deg); }
     }
 
     .token-address {
