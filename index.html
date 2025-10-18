@@ -788,23 +788,25 @@
       const interval = audioState.interval;
       const beatType = audioState.type;
       
-      // ENHANCED SCALE: More dramatic scaling using same factors as glow effects
-      const energyScale = 1 + (energy * 1.2); // Energy-based scaling (1.2x range - was 0.8x) - MORE DRAMATIC
-      const bpmScale = 1 + ((bpm - 135) / 200) * 0.8; // BPM-based scaling (0.8x range - was 0.6x) - MORE DRAMATIC
-      const intensityScale = 1 + (intensity * 0.9); // Intensity-based scaling (0.9x range - was 0.6x) - MORE DRAMATIC
-      const rhythmScale = 1 + ((rhythmSpeed - 1.0) * 0.7); // Rhythm speed scaling (0.7x range - was 0.5x) - MORE DRAMATIC
-      const beatTypeScale = beatType === 'strong' ? 1.4 : 1.0; // Strong beats get EVEN BIGGER (1.4x - was 1.3x)
-      const intervalScale = interval ? 1 + ((0.5 - interval) * 0.8) : 1.0; // Fast intervals = EVEN BIGGER (0.8x - was 0.6x)
+      // EXTREME SCALE: Much more dramatic scaling for maximum visual impact
+      const energyScale = 1 + (energy * 2.0); // Energy-based scaling (2.0x range - was 1.2x) - MUCH MORE DRAMATIC
+      const bpmScale = 1 + ((bpm - 135) / 200) * 1.5; // BPM-based scaling (1.5x range - was 0.8x) - MUCH MORE DRAMATIC
+      const intensityScale = 1 + (intensity * 1.8); // Intensity-based scaling (1.8x range - was 0.9x) - MUCH MORE DRAMATIC
+      const rhythmScale = 1 + ((rhythmSpeed - 1.0) * 1.2); // Rhythm speed scaling (1.2x range - was 0.7x) - MUCH MORE DRAMATIC
+      const beatTypeScale = beatType === 'strong' ? 1.6 : 1.0; // Strong beats get MUCH BIGGER (1.6x - was 1.4x)
+      const intervalScale = interval ? 1 + ((0.5 - interval) * 1.2) : 1.0; // Fast intervals = MUCH BIGGER (1.2x - was 0.8x)
       
       // Additional scaling factors that match the glow effect responsiveness
-      const glowBasedScale = 1 + (Math.min(0.3, (energy + intensity + (rhythmSpeed - 1.0)) / 3)); // Combined glow factors
-      const beatResponseScale = beatType === 'strong' ? 1.15 : 1.0; // Extra boost for strong beats
+      const glowBasedScale = 1 + (Math.min(0.5, (energy + intensity + (rhythmSpeed - 1.0)) / 3)); // Combined glow factors (0.5x - was 0.3x)
+      const beatResponseScale = beatType === 'strong' ? 1.25 : 1.0; // Extra boost for strong beats (1.25x - was 1.15x)
+      const musicIntensityScale = 1 + (Math.min(0.4, (energy * intensity * (rhythmSpeed - 1.0)))); // Music intensity multiplier
       
-      const scale = energyScale * bpmScale * intensityScale * rhythmScale * beatTypeScale * intervalScale * glowBasedScale * beatResponseScale;
+      const scale = energyScale * bpmScale * intensityScale * rhythmScale * beatTypeScale * intervalScale * glowBasedScale * beatResponseScale * musicIntensityScale;
       
-      // Debug logging for scaling (remove this later if not needed)
+      // Debug logging for scaling and rotation (remove this later if not needed)
       if (Math.floor(currentTime) !== Math.floor(currentTime - 0.1)) {
         console.log(`📏 Scaling - Energy: ${energyScale.toFixed(2)}, BPM: ${bpmScale.toFixed(2)}, Intensity: ${intensityScale.toFixed(2)}, Rhythm: ${rhythmScale.toFixed(2)}, Beat: ${beatTypeScale.toFixed(2)}, Glow: ${glowBasedScale.toFixed(2)}, Final: ${scale.toFixed(2)}`);
+        console.log(`🌀 Rotation - Beat: ${beatRotation.toFixed(1)}°, BPM: ${bpmRotation.toFixed(1)}°, Energy: ${energyRotation.toFixed(1)}°, Rhythm: ${rhythmRotation.toFixed(1)}°, BeatType: ${beatTypeRotation.toFixed(1)}°, Final: ${rotation.toFixed(1)}°`);
       }
         
       // EXTREME BRIGHTNESS & CONTRAST: Much more aggressive for fast music
@@ -833,15 +835,19 @@
       
       const saturation = Math.min(3.0, rhythmSaturation * energySaturation * bpmSaturation * intensitySaturation * beatTypeSaturation);
       
-      // EXTREME ROTATION: Much more aggressive rotation for fast music
-      const beatRotation = (intensity * 40) * (Math.random() > 0.5 ? 1 : -1); // Beat-based rotation (40x - was 20x)
-      const bpmRotation = ((bpm - 135) / 50) * 25; // BPM-based rotation (25x - was 12x)
-      const energyRotation = energy * 30 * (Math.random() > 0.5 ? 1 : -1); // Energy-based rotation (30x - was 15x)
-      const rhythmRotation = (rhythmSpeed - 1.0) * 35 * (Math.random() > 0.5 ? 1 : -1); // Rhythm-based rotation (35x - was 18x)
-      const beatTypeRotation = beatType === 'strong' ? 15 * (Math.random() > 0.5 ? 1 : -1) : 0; // Strong beats rotate MUCH more (15x - was 8x)
-      const intervalRotation = interval ? ((0.5 - interval) * 20) * (Math.random() > 0.5 ? 1 : -1) : 0; // Fast intervals rotate MUCH more (20x - was 10x)
+      // EXTREME ROTATION: Much more dramatic rotation for maximum visual impact
+      const beatRotation = (intensity * 80) * (Math.random() > 0.5 ? 1 : -1); // Beat-based rotation (80x - was 40x) - MUCH MORE DRAMATIC
+      const bpmRotation = ((bpm - 135) / 50) * 50; // BPM-based rotation (50x - was 25x) - MUCH MORE DRAMATIC
+      const energyRotation = energy * 60 * (Math.random() > 0.5 ? 1 : -1); // Energy-based rotation (60x - was 30x) - MUCH MORE DRAMATIC
+      const rhythmRotation = (rhythmSpeed - 1.0) * 70 * (Math.random() > 0.5 ? 1 : -1); // Rhythm-based rotation (70x - was 35x) - MUCH MORE DRAMATIC
+      const beatTypeRotation = beatType === 'strong' ? 30 * (Math.random() > 0.5 ? 1 : -1) : 0; // Strong beats rotate MUCH MORE (30x - was 15x)
+      const intervalRotation = interval ? ((0.5 - interval) * 40) * (Math.random() > 0.5 ? 1 : -1) : 0; // Fast intervals rotate MUCH MORE (40x - was 20x)
       
-      const rotation = beatRotation + bpmRotation + energyRotation + rhythmRotation + beatTypeRotation + intervalRotation;
+      // Additional rotation factors for maximum impact
+      const glowBasedRotation = (energy + intensity + (rhythmSpeed - 1.0)) * 25 * (Math.random() > 0.5 ? 1 : -1); // Glow-based rotation
+      const musicIntensityRotation = (energy * intensity * (rhythmSpeed - 1.0)) * 20 * (Math.random() > 0.5 ? 1 : -1); // Music intensity rotation
+      
+      const rotation = beatRotation + bpmRotation + energyRotation + rhythmRotation + beatTypeRotation + intervalRotation + glowBasedRotation + musicIntensityRotation;
       
       // EXTREME HUE SHIFT: Much more aggressive color changes for fast music
       const bpmHue = (bpm - 135) * 3.0; // BPM-based hue (3.0x - was 1.5x)
