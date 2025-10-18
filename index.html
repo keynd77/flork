@@ -625,9 +625,18 @@
         // Start rhythm-based image changes
         startRhythmDisplay();
         
+        console.log("🎵 Audio started successfully, rhythm display started");
+        
       } catch (error) {
         console.log("Audio start failed:", error);
-        alert("Audio failed to start. Make sure the sound.mp3 file exists in the same folder.");
+        // Don't show alert if audio is actually playing
+        if (!audio.paused) {
+          console.log("🎵 Audio is actually playing despite error");
+          isPlaying = true;
+          startRhythmDisplay();
+        } else {
+          alert("Audio failed to start. Make sure the sound.mp3 file exists in the same folder.");
+        }
       }
     }
 
@@ -661,10 +670,13 @@
     }
 
     function startRhythmDisplay() {
-      if (!isPlaying) return;
+      if (!isPlaying) {
+        console.log("🎵 Rhythm display stopped - not playing");
+        return;
+      }
       
       const now = Date.now();
-      const currentTime = audio.currentTime; // Use actual audio time
+      const currentTime = audio ? audio.currentTime : 0; // Use actual audio time
       
       // Get comprehensive audio state for advanced timing
       const audioState = getCurrentAudioState(currentTime);
@@ -673,6 +685,8 @@
       const bpm = audioState.bpm;
       const rhythmSpeed = audioState.rhythmSpeed;
       const interval = audioState.interval;
+      
+      console.log(`🎵 Rhythm display running - Time: ${currentTime.toFixed(1)}s, Intensity: ${intensity.toFixed(3)}, Energy: ${energy.toFixed(3)}`);
       
       // EXTREME MUSICAL TIMING - Much more aggressive for fast music
       let displayTime;
@@ -719,6 +733,8 @@
     function changeImage() {
       // Get next image
       index = (index % total) + 1;
+      
+      console.log(`🖼️ Changing to image ${index}`);
       
       // Get comprehensive audio state for advanced visual effects
       const currentTime = audio ? audio.currentTime : 0;
