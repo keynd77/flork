@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Beat & Tempo Analyzer</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff00;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #ff00ff;
+            text-align: center;
+            text-shadow: 0 0 10px #ff00ff;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        button {
+            background: #000;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            padding: 15px 30px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            background: #00ff00;
+            color: #000;
+            box-shadow: 0 0 20px #00ff00;
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        input[type="file"] {
+            background: #000;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px;
+        }
+        
+        .progress {
+            width: 100%;
+            height: 20px;
+            background: #000;
+            border: 1px solid #00ff00;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #ff00ff);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .results {
+            background: rgba(255, 0, 255, 0.1);
+            border: 1px solid #ff00ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .beat-item {
+            background: rgba(0, 255, 0, 0.05);
+            border-left: 3px solid #00ff00;
+            padding: 10px;
+            margin: 5px 0;
+            font-family: monospace;
+        }
+        
+        .tempo-change {
+            background: rgba(255, 0, 255, 0.1);
+            border-left: 3px solid #ff00ff;
+            padding: 10px;
+            margin: 5px 0;
+            font-family: monospace;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .stat-box {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            border-radius: 5px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ffff;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        .code-output {
+            background: #000;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+        
+        .copy-btn {
+            background: #ff00ff;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .copy-btn:hover {
+            background: #ff66ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 ADVANCED BEAT & TEMPO ANALYZER 🎵</h1>
+        
+        <div class="section">
+            <h2>📁 Load Audio File</h2>
+            <div class="controls">
+                <input type="file" id="audioFile" accept="audio/*">
+                <button id="loadBtn" onclick="loadAudio()">Load Audio</button>
+            </div>
+            <div id="audioInfo"></div>
+        </div>
+        
+        <div class="section">
+            <h2>🔍 Analysis Controls</h2>
+            <div class="controls">
+                <button id="analyzeBtn" onclick="analyzeBeats()" disabled>Analyze Beats & Tempo</button>
+                <button id="exportBtn" onclick="exportResults()" disabled>Export Results</button>
+            </div>
+            
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <div id="progressText">Ready to analyze...</div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 Analysis Statistics</h2>
+            <div class="stats" id="stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="totalBeats">0</div>
+                    <div class="stat-label">Total Beats</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="avgBPM">0</div>
+                    <div class="stat-label">Average BPM</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="tempoChanges">0</div>
+                    <div class="stat-label">Tempo Changes</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="duration">0s</div>
+                    <div class="stat-label">Duration</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🎯 Beat Detection Results</h2>
+            <div class="results" id="beatResults"></div>
+        </div>
+        
+        <div class="section">
+            <h2>📈 Tempo Changes</h2>
+            <div class="results" id="tempoResults"></div>
+        </div>
+        
+        <div class="section">
+            <h2>💻 Generated Code</h2>
+            <button class="copy-btn" onclick="copyToClipboard()">Copy to Clipboard</button>
+            <div class="code-output" id="codeOutput">// Analysis results will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        let audioContext;
+        let audioBuffer;
+        let audioElement;
+        let beatData = [];
+        let tempoData = [];
+        
+        async function loadAudio() {
+            const fileInput = document.getElementById('audioFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select an audio file first!');
+                return;
+            }
+            
+            try {
+                updateProgress(0, 'Loading audio file...');
+                
+                // Create audio context
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Load audio file
+                const arrayBuffer = await file.arrayBuffer();
+                audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                
+                // Create audio element for playback
+                audioElement = new Audio();
+                audioElement.src = URL.createObjectURL(file);
+                
+                // Update UI
+                document.getElementById('audioInfo').innerHTML = `
+                    <strong>Loaded:</strong> ${file.name}<br>
+                    <strong>Duration:</strong> ${audioBuffer.duration.toFixed(2)}s<br>
+                    <strong>Sample Rate:</strong> ${audioBuffer.sampleRate}Hz<br>
+                    <strong>Channels:</strong> ${audioBuffer.numberOfChannels}
+                `;
+                
+                document.getElementById('analyzeBtn').disabled = false;
+                updateProgress(100, 'Audio loaded successfully!');
+                
+            } catch (error) {
+                console.error('Error loading audio:', error);
+                alert('Error loading audio file: ' + error.message);
+            }
+        }
+        
+        async function analyzeBeats() {
+            if (!audioBuffer) {
+                alert('Please load an audio file first!');
+                return;
+            }
+            
+            try {
+                updateProgress(0, 'Starting beat analysis...');
+                document.getElementById('analyzeBtn').disabled = true;
+                
+                // Get audio data
+                const channelData = audioBuffer.getChannelData(0); // Use first channel
+                const sampleRate = audioBuffer.sampleRate;
+                const duration = audioBuffer.duration;
+                
+                updateProgress(10, 'Analyzing frequency spectrum...');
+                
+                // Beat detection using onset detection
+                const beats = await detectBeats(channelData, sampleRate);
+                
+                updateProgress(60, 'Analyzing tempo changes...');
+                
+                // Tempo analysis
+                const tempoChanges = await analyzeTempo(beats, duration);
+                
+                updateProgress(90, 'Processing results...');
+                
+                // Store results
+                beatData = beats;
+                tempoData = tempoChanges;
+                
+                // Update UI
+                displayResults(beats, tempoChanges);
+                generateCode(beats, tempoChanges);
+                
+                updateProgress(100, 'Analysis complete!');
+                document.getElementById('exportBtn').disabled = false;
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                alert('Analysis failed: ' + error.message);
+                document.getElementById('analyzeBtn').disabled = false;
+            }
+        }
+        
+        async function detectBeats(channelData, sampleRate) {
+            const beats = [];
+            const windowSize = 1024;
+            const hopSize = 512;
+            const threshold = 0.1; // Beat detection threshold
+            
+            // Calculate spectral flux for onset detection
+            const spectralFlux = [];
+            let previousSpectrum = null;
+            
+            for (let i = 0; i < channelData.length - windowSize; i += hopSize) {
+                const window = channelData.slice(i, i + windowSize);
+                const spectrum = fft(window);
+                
+                if (previousSpectrum) {
+                    let flux = 0;
+                    for (let j = 0; j < spectrum.length; j++) {
+                        const diff = spectrum[j] - previousSpectrum[j];
+                        if (diff > 0) flux += diff;
+                    }
+                    spectralFlux.push(flux);
+                }
+                previousSpectrum = spectrum;
+            }
+            
+            // Find peaks in spectral flux (beat onsets)
+            for (let i = 1; i < spectralFlux.length - 1; i++) {
+                const time = (i * hopSize) / sampleRate;
+                const flux = spectralFlux[i];
+                
+                // Check if this is a peak
+                if (flux > threshold && 
+                    flux > spectralFlux[i-1] && 
+                    flux > spectralFlux[i+1]) {
+                    
+                    // Calculate intensity based on flux magnitude
+                    const intensity = Math.min(1.0, flux / 2.0);
+                    
+                    beats.push({
+                        time: time,
+                        intensity: intensity,
+                        type: intensity > 0.5 ? 'strong' : 'weak'
+                    });
+                }
+            }
+            
+            return beats;
+        }
+        
+        async function analyzeTempo(beats, duration) {
+            const tempoChanges = [];
+            const windowSize = 8; // Analyze tempo in 8-beat windows
+            let currentBPM = 0;
+            
+            for (let i = 0; i < beats.length - windowSize; i += windowSize) {
+                const window = beats.slice(i, i + windowSize);
+                const startTime = window[0].time;
+                const endTime = window[window.length - 1].time;
+                
+                if (endTime - startTime > 0) {
+                    const bpm = (window.length - 1) * 60 / (endTime - startTime);
+                    
+                    // Detect significant tempo changes (>10% change)
+                    if (Math.abs(bpm - currentBPM) > currentBPM * 0.1) {
+                        tempoChanges.push({
+                            time: startTime,
+                            bpm: bpm,
+                            change: bpm - currentBPM,
+                            type: bpm > currentBPM ? 'increase' : 'decrease'
+                        });
+                        currentBPM = bpm;
+                    }
+                }
+            }
+            
+            return tempoChanges;
+        }
+        
+        function fft(signal) {
+            // Simple FFT implementation for spectral analysis
+            const N = signal.length;
+            const spectrum = new Array(N / 2);
+            
+            for (let k = 0; k < N / 2; k++) {
+                let real = 0;
+                let imag = 0;
+                
+                for (let n = 0; n < N; n++) {
+                    const angle = -2 * Math.PI * k * n / N;
+                    real += signal[n] * Math.cos(angle);
+                    imag += signal[n] * Math.sin(angle);
+                }
+                
+                spectrum[k] = Math.sqrt(real * real + imag * imag);
+            }
+            
+            return spectrum;
+        }
+        
+        function displayResults(beats, tempoChanges) {
+            // Update statistics
+            const avgBPM = beats.length > 0 ? (beats.length * 60 / audioBuffer.duration) : 0;
+            
+            document.getElementById('totalBeats').textContent = beats.length;
+            document.getElementById('avgBPM').textContent = avgBPM.toFixed(1);
+            document.getElementById('tempoChanges').textContent = tempoChanges.length;
+            document.getElementById('duration').textContent = audioBuffer.duration.toFixed(1) + 's';
+            
+            // Display beats
+            const beatResults = document.getElementById('beatResults');
+            beatResults.innerHTML = '';
+            
+            beats.slice(0, 50).forEach((beat, index) => {
+                const beatDiv = document.createElement('div');
+                beatDiv.className = 'beat-item';
+                beatDiv.innerHTML = `
+                    <strong>Beat ${index + 1}:</strong> ${beat.time.toFixed(3)}s 
+                    | Intensity: ${beat.intensity.toFixed(3)} 
+                    | Type: ${beat.type}
+                `;
+                beatResults.appendChild(beatDiv);
+            });
+            
+            if (beats.length > 50) {
+                const moreDiv = document.createElement('div');
+                moreDiv.innerHTML = `... and ${beats.length - 50} more beats`;
+                beatResults.appendChild(moreDiv);
+            }
+            
+            // Display tempo changes
+            const tempoResults = document.getElementById('tempoResults');
+            tempoResults.innerHTML = '';
+            
+            tempoChanges.forEach((change, index) => {
+                const tempoDiv = document.createElement('div');
+                tempoDiv.className = 'tempo-change';
+                tempoDiv.innerHTML = `
+                    <strong>Tempo Change ${index + 1}:</strong> ${change.time.toFixed(3)}s 
+                    | BPM: ${change.bpm.toFixed(1)} 
+                    | Change: ${change.change > 0 ? '+' : ''}${change.change.toFixed(1)} 
+                    | Type: ${change.type}
+                `;
+                tempoResults.appendChild(tempoDiv);
+            });
+        }
+        
+        function generateCode(beats, tempoChanges) {
+            const code = `// Advanced Beat & Tempo Analysis Results
+// Generated for ${audioBuffer.duration.toFixed(2)}s audio
+
+// Beat onsets with precise timestamps
+const beatMap = [
+${beats.map(beat => `    { time: ${beat.time.toFixed(3)}, intensity: ${beat.intensity.toFixed(3)}, type: '${beat.type}' }`).join(',\n')}
+];
+
+// Tempo changes and BPM variations
+const tempoMap = [
+${tempoChanges.map(change => `    { time: ${change.time.toFixed(3)}, bpm: ${change.bpm.toFixed(1)}, change: ${change.change.toFixed(1)}, type: '${change.type}' }`).join(',\n')}
+];
+
+// Analysis statistics
+const analysisStats = {
+    totalBeats: ${beats.length},
+    averageBPM: ${(beats.length * 60 / audioBuffer.duration).toFixed(1)},
+    tempoChanges: ${tempoChanges.length},
+    duration: ${audioBuffer.duration.toFixed(2)}
+};
+
+// Function to get current beat intensity
+function getCurrentBeatIntensity(currentTime) {
+    // Find closest beat
+    let closestBeat = beatMap[0];
+    let minDistance = Math.abs(currentTime - closestBeat.time);
+    
+    for (let beat of beatMap) {
+        const distance = Math.abs(currentTime - beat.time);
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestBeat = beat;
+        }
+    }
+    
+    // Return intensity with fade
+    const fadeDistance = 0.2; // 200ms fade
+    const fade = Math.max(0, 1 - (minDistance / fadeDistance));
+    return closestBeat.intensity * fade;
+}
+
+// Function to get current BPM
+function getCurrentBPM(currentTime) {
+    // Find current tempo
+    let currentTempo = tempoMap[0];
+    
+    for (let tempo of tempoMap) {
+        if (tempo.time <= currentTime) {
+            currentTempo = tempo;
+        } else {
+            break;
+        }
+    }
+    
+    return currentTempo.bpm;
+}`;
+
+            document.getElementById('codeOutput').textContent = code;
+        }
+        
+        function exportResults() {
+            const code = document.getElementById('codeOutput').textContent;
+            const blob = new Blob([code], { type: 'text/javascript' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'beat-analysis-results.js';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        function copyToClipboard() {
+            const code = document.getElementById('codeOutput').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                alert('Code copied to clipboard!');
+            });
+        }
+        
+        function updateProgress(percent, text) {
+            document.getElementById('progressBar').style.width = percent + '%';
+            document.getElementById('progressText').textContent = text;
+        }
+    </script>
+</body>
+</html>

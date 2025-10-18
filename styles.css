@@ -1,0 +1,220 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    overflow: hidden; /* Prevent scrolling */
+    position: relative;
+}
+
+/* Token Information - Centered */
+.token-info {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 1000;
+    pointer-events: none; /* Allow clicks to pass through */
+}
+
+.token-symbol {
+    font-size: 8rem;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
+    margin-bottom: 1rem;
+    letter-spacing: 0.1em;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+
+.token-address {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.05em;
+}
+
+/* Glow animation for token symbol */
+@keyframes glow {
+    from {
+        text-shadow: 0 0 30px rgba(255, 255, 255, 0.8), 0 0 40px rgba(102, 126, 234, 0.6);
+    }
+    to {
+        text-shadow: 0 0 40px rgba(255, 255, 255, 1), 0 0 60px rgba(118, 75, 162, 0.8);
+    }
+}
+
+/* Meme Container */
+.meme-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* Allow clicks to pass through to token info */
+}
+
+/* Individual Meme */
+.meme-item {
+    position: absolute;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    pointer-events: auto; /* Allow clicking on memes */
+    transition: all 0.5s ease;
+    animation: fadeInScale 0.8s ease-out;
+}
+
+.meme-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.meme-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+    z-index: 999;
+}
+
+/* Meme appearance animation */
+@keyframes fadeInScale {
+    0% {
+        opacity: 0;
+        transform: scale(0.5) rotate(-10deg);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.1) rotate(5deg);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+/* Meme disappearance animation */
+@keyframes fadeOutScale {
+    0% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.3) rotate(15deg);
+    }
+}
+
+/* Different meme sizes */
+.meme-small {
+    width: 120px;
+    height: 120px;
+}
+
+.meme-medium {
+    width: 180px;
+    height: 180px;
+}
+
+.meme-large {
+    width: 250px;
+    height: 250px;
+}
+
+.meme-extra-large {
+    width: 320px;
+    height: 320px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .token-symbol {
+        font-size: 5rem;
+    }
+    
+    .token-address {
+        font-size: 1rem;
+        padding: 0.6rem 1.2rem;
+    }
+    
+    .meme-small {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .meme-medium {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .meme-large {
+        width: 160px;
+        height: 160px;
+    }
+    
+    .meme-extra-large {
+        width: 200px;
+        height: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .token-symbol {
+        font-size: 3.5rem;
+    }
+    
+    .token-address {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+    
+    .meme-small {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .meme-medium {
+        width: 90px;
+        height: 90px;
+    }
+    
+    .meme-large {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .meme-extra-large {
+        width: 150px;
+        height: 150px;
+    }
+}
+
+/* Background animation */
+body {
+    animation: backgroundShift 20s ease-in-out infinite;
+}
+
+@keyframes backgroundShift {
+    0%, 100% {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    25% {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+    50% {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+    75% {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+}
