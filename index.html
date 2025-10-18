@@ -449,8 +449,8 @@
         delete effectTimeouts[imageIndex];
       }
       
-      // Reset all effects
-      image.style.transform = 'scale(1) rotate(0deg) translate(0px, 0px)';
+      // Reset all effects (preserve centering)
+      image.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg) translate(0px, 0px)';
       image.style.filter = 'brightness(1) contrast(1) saturate(1) hue-rotate(0deg) blur(0px)';
       image.style.boxShadow = '0 0 20px rgba(255, 0, 150, 0.3)'; // Default glow
       image.style.animation = 'none';
@@ -784,8 +784,8 @@
         const randomX = (Math.random() - 0.5) * maxOffsetX * intensity * speedMultiplier; // More movement for fast music
         const randomY = (Math.random() - 0.5) * maxOffsetY * intensity * speedMultiplier;
         
-        // Apply extreme transforms
-        newImage.style.transform = `scale(${scale}) rotate(${rotation}deg) translate(${randomX}px, ${randomY}px)`;
+        // Apply extreme transforms (preserve centering)
+        newImage.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${rotation}deg) translate(${randomX}px, ${randomY}px)`;
         newImage.style.filter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) hue-rotate(${hueShift}deg)`;
         
         // Dynamic glow effects that get crazier for fast music
@@ -833,7 +833,7 @@
         
         // Reset effects after a short time
         effectTimeouts[index] = setTimeout(() => {
-          newImage.style.transform = 'scale(1) rotate(0deg) translate(0px, 0px)';
+          newImage.style.transform = 'translate(-50%, -50%) scale(1) rotate(0deg) translate(0px, 0px)';
           newImage.style.filter = 'brightness(1) contrast(1) saturate(1) hue-rotate(0deg) blur(0px)';
           newImage.style.boxShadow = '0 0 20px rgba(255, 0, 150, 0.3)'; // Reset to default glow
           newImage.style.animation = 'none';
