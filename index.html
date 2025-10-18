@@ -431,10 +431,29 @@
     let imagesPreloaded = false;
     let allImageElements = [];
     let currentVisibleImage = null;
+    let effectTimeouts = {}; // Store timeouts for each image to clear them
 
     // Generate the correct filename based on index
     function getImagePath(index) {
       return `memes/flork_${index}.jpg`;
+    }
+
+    // Clear all effects on an image
+    function clearImageEffects(imageIndex) {
+      const image = allImageElements[imageIndex];
+      if (!image) return;
+      
+      // Clear any pending effect timeout
+      if (effectTimeouts[imageIndex]) {
+        clearTimeout(effectTimeouts[imageIndex]);
+        delete effectTimeouts[imageIndex];
+      }
+      
+      // Reset all effects
+      image.style.transform = 'scale(1) rotate(0deg) translate(0px, 0px)';
+      image.style.filter = 'brightness(1) contrast(1) saturate(1) hue-rotate(0deg) blur(0px)';
+      image.style.boxShadow = '0 0 20px rgba(255, 0, 150, 0.3)'; // Default glow
+      image.style.animation = 'none';
     }
 
     // Create and preload all image elements
@@ -540,6 +559,12 @@
     function showImage(imageIndex) {
       // Hide current image if any
       if (currentVisibleImage) {
+        // Find the index of current image and clear its effects
+        const currentIndex = allImageElements.indexOf(currentVisibleImage);
+        if (currentIndex !== -1) {
+          clearImageEffects(currentIndex);
+        }
+        
         currentVisibleImage.style.opacity = '0';
         setTimeout(() => {
           currentVisibleImage.style.display = 'none';
@@ -549,6 +574,9 @@
       // Show new image
       const newImage = allImageElements[imageIndex];
       if (newImage) {
+        // Clear any existing effects on the new image
+        clearImageEffects(imageIndex);
+        
         newImage.style.display = 'block';
         setTimeout(() => {
           newImage.style.opacity = '1';
@@ -652,6 +680,15 @@
       if (animationId) {
         cancelAnimationFrame(animationId);
         animationId = null;
+      }
+      
+      // Clear all effect timeouts and reset current image
+      for (let i = 1; i <= total; i++) {
+        if (effectTimeouts[i]) {
+          clearTimeout(effectTimeouts[i]);
+          delete effectTimeouts[i];
+        }
+        clearImageEffects(i);
       }
       
       // Show button again
@@ -795,11 +832,12 @@
         }
         
         // Reset effects after a short time
-        setTimeout(() => {
+        effectTimeouts[index] = setTimeout(() => {
           newImage.style.transform = 'scale(1) rotate(0deg) translate(0px, 0px)';
           newImage.style.filter = 'brightness(1) contrast(1) saturate(1) hue-rotate(0deg) blur(0px)';
-          newImage.style.boxShadow = 'none';
+          newImage.style.boxShadow = '0 0 20px rgba(255, 0, 150, 0.3)'; // Reset to default glow
           newImage.style.animation = 'none';
+          delete effectTimeouts[index];
         }, 300);
       }, 100); // Faster transition since images are already loaded
     }
