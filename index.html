@@ -802,12 +802,6 @@
       const musicIntensityScale = 1 + (Math.min(0.4, (energy * intensity * (rhythmSpeed - 1.0)))); // Music intensity multiplier
       
       const scale = energyScale * bpmScale * intensityScale * rhythmScale * beatTypeScale * intervalScale * glowBasedScale * beatResponseScale * musicIntensityScale;
-      
-      // Debug logging for scaling and rotation (remove this later if not needed)
-      if (Math.floor(currentTime) !== Math.floor(currentTime - 0.1)) {
-        console.log(`📏 Scaling - Energy: ${energyScale.toFixed(2)}, BPM: ${bpmScale.toFixed(2)}, Intensity: ${intensityScale.toFixed(2)}, Rhythm: ${rhythmScale.toFixed(2)}, Beat: ${beatTypeScale.toFixed(2)}, Glow: ${glowBasedScale.toFixed(2)}, Final: ${scale.toFixed(2)}`);
-        console.log(`🌀 Rotation - Beat: ${beatRotation.toFixed(1)}°, BPM: ${bpmRotation.toFixed(1)}°, Energy: ${energyRotation.toFixed(1)}°, Rhythm: ${rhythmRotation.toFixed(1)}°, BeatType: ${beatTypeRotation.toFixed(1)}°, Final: ${rotation.toFixed(1)}°`);
-      }
         
       // EXTREME BRIGHTNESS & CONTRAST: Much more aggressive for fast music
       const energyBrightness = 1 + (energy * 1.0); // Energy-based brightness (1.0x range - was 0.5x)
@@ -848,6 +842,12 @@
       const musicIntensityRotation = (energy * intensity * (rhythmSpeed - 1.0)) * 20 * (Math.random() > 0.5 ? 1 : -1); // Music intensity rotation
       
       const rotation = beatRotation + bpmRotation + energyRotation + rhythmRotation + beatTypeRotation + intervalRotation + glowBasedRotation + musicIntensityRotation;
+      
+      // Debug logging for scaling and rotation (after all variables are declared)
+      if (Math.floor(currentTime) !== Math.floor(currentTime - 0.1)) {
+        console.log(`📏 Scaling - Energy: ${energyScale.toFixed(2)}, BPM: ${bpmScale.toFixed(2)}, Intensity: ${intensityScale.toFixed(2)}, Rhythm: ${rhythmScale.toFixed(2)}, Beat: ${beatTypeScale.toFixed(2)}, Glow: ${glowBasedScale.toFixed(2)}, Final: ${scale.toFixed(2)}`);
+        console.log(`🌀 Rotation - Beat: ${beatRotation.toFixed(1)}°, BPM: ${bpmRotation.toFixed(1)}°, Energy: ${energyRotation.toFixed(1)}°, Rhythm: ${rhythmRotation.toFixed(1)}°, BeatType: ${beatTypeRotation.toFixed(1)}°, Final: ${rotation.toFixed(1)}°`);
+      }
       
       // EXTREME HUE SHIFT: Much more aggressive color changes for fast music
       const bpmHue = (bpm - 135) * 3.0; // BPM-based hue (3.0x - was 1.5x)
