@@ -402,9 +402,6 @@
     </button>
   </div>
   
-  <div id="imageContainer" class="image-container">
-    <img id="currentMeme" class="meme-layer" src="memes/flork_1.jpg" alt="">
-  </div>
   
   <div class="token-info">
     <div class="token-symbol">$FORK</div>
@@ -426,39 +423,67 @@
   <script>
     const total = 141;
     let index = 1;
-    const currentMeme = document.getElementById("currentMeme");
     const startButton = document.getElementById("startButton");
     let audio = null;
     let animationId = null;
     let lastImageTime = 0;
     let isPlaying = false;
     let imagesPreloaded = false;
-    let preloadedImages = [];
+    let allImageElements = [];
+    let currentVisibleImage = null;
 
     // Generate the correct filename based on index
     function getImagePath(index) {
       return `memes/flork_${index}.jpg`;
     }
 
-    // Preload all images for smooth transitions
+    // Create and preload all image elements
     function preloadAllImages() {
-      console.log("🖼️ Starting image preload...");
+      console.log("🖼️ Creating and preloading all image elements...");
       let loadedCount = 0;
       const loadingIndicator = document.getElementById('loadingIndicator');
       const loadingBar = document.querySelector('.loading-bar');
       const loadingText = document.querySelector('.loading-text');
       
+      // Create container for all images
+      const imageContainer = document.createElement('div');
+      imageContainer.id = 'imageContainer';
+      imageContainer.style.position = 'absolute';
+      imageContainer.style.top = '0';
+      imageContainer.style.left = '0';
+      imageContainer.style.width = '100%';
+      imageContainer.style.height = '100%';
+      imageContainer.style.pointerEvents = 'none';
+      document.body.appendChild(imageContainer);
+      
       for (let i = 1; i <= total; i++) {
-        const img = new Image();
+        // Create actual DOM image element
+        const img = document.createElement('img');
         img.src = getImagePath(i);
+        img.className = 'meme-layer';
+        img.style.position = 'absolute';
+        img.style.top = '50%';
+        img.style.left = '50%';
+        img.style.transform = 'translate(-50%, -50%)';
+        img.style.maxWidth = '400px';
+        img.style.maxHeight = '400px';
+        img.style.objectFit = 'contain';
+        img.style.opacity = '0'; // Start hidden
+        img.style.display = 'none'; // Start hidden
+        img.style.transition = 'all 0.4s ease';
+        img.style.borderRadius = '10px';
+        img.style.boxShadow = '0 0 20px rgba(255, 0, 150, 0.3)';
+        
+        // Add to container
+        imageContainer.appendChild(img);
+        allImageElements[i] = img;
         
         img.onload = () => {
           loadedCount++;
-          preloadedImages[i] = img;
           
           // Update progress
           const progress = Math.round((loadedCount / total) * 100);
-          console.log(`📸 Preloaded ${loadedCount}/${total} images (${progress}%)`);
+          console.log(`📸 Loaded ${loadedCount}/${total} images (${progress}%)`);
           
           // Update loading indicator
           loadingBar.style.width = `${progress}%`;
@@ -466,7 +491,10 @@
           
           if (loadedCount === total) {
             imagesPreloaded = true;
-            console.log("✅ All images preloaded! Ready for smooth transitions.");
+            console.log("✅ All images loaded! Ready for instant transitions.");
+            
+            // Show first image
+            showImage(1);
             
             // Hide loading indicator with fade out
             loadingText.textContent = "Ready!";
@@ -490,7 +518,10 @@
           
           if (loadedCount === total) {
             imagesPreloaded = true;
-            console.log("✅ Image preloading completed (with some errors).");
+            console.log("✅ Image loading completed (with some errors).");
+            
+            // Show first available image
+            showImage(1);
             
             // Hide loading indicator
             loadingText.textContent = "Ready!";
@@ -502,6 +533,27 @@
             }, 1000);
           }
         };
+      }
+    }
+
+    // Show a specific image by index
+    function showImage(imageIndex) {
+      // Hide current image if any
+      if (currentVisibleImage) {
+        currentVisibleImage.style.opacity = '0';
+        setTimeout(() => {
+          currentVisibleImage.style.display = 'none';
+        }, 400);
+      }
+      
+      // Show new image
+      const newImage = allImageElements[imageIndex];
+      if (newImage) {
+        newImage.style.display = 'block';
+        setTimeout(() => {
+          newImage.style.opacity = '1';
+        }, 50);
+        currentVisibleImage = newImage;
       }
     }
 
@@ -650,27 +702,19 @@
     function changeImage() {
       // Get next image
       index = (index % total) + 1;
-      const imagePath = getImagePath(index);
       
       // Get comprehensive audio state for advanced visual effects
       const currentTime = audio ? audio.currentTime : 0;
       const audioState = getCurrentAudioState(currentTime);
       const intensity = getCurrentIntensity(currentTime);
       
-      // Fade out current image
-      currentMeme.style.opacity = '0';
+      // Show the new image (this handles the fade transition)
+      showImage(index);
       
-      // Change image after fade out
+      // Apply visual effects to the newly shown image
       setTimeout(() => {
-        // Use preloaded image if available, otherwise fallback to src
-        if (imagesPreloaded && preloadedImages[index]) {
-          // Use preloaded image for instant loading
-          currentMeme.src = preloadedImages[index].src;
-        } else {
-          // Fallback to normal loading
-          currentMeme.src = imagePath;
-        }
-        currentMeme.style.opacity = '1';
+        const newImage = allImageElements[index];
+        if (!newImage) return;
         
         // DYNAMIC visual effects based on comprehensive audio analysis
         // More dramatic scaling when music is faster
@@ -704,8 +748,8 @@
         const randomY = (Math.random() - 0.5) * maxOffsetY * intensity * speedMultiplier;
         
         // Apply extreme transforms
-        currentMeme.style.transform = `scale(${scale}) rotate(${rotation}deg) translate(${randomX}px, ${randomY}px)`;
-        currentMeme.style.filter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) hue-rotate(${hueShift}deg)`;
+        newImage.style.transform = `scale(${scale}) rotate(${rotation}deg) translate(${randomX}px, ${randomY}px)`;
+        newImage.style.filter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) hue-rotate(${hueShift}deg)`;
         
         // Dynamic glow effects that get crazier for fast music
         if (intensity > 0.6) {
@@ -715,22 +759,22 @@
           
           if (speedMultiplier > 1.5) {
             // Multiple glow layers for very fast music
-            currentMeme.style.boxShadow = `
+            newImage.style.boxShadow = `
               0 0 ${glowIntensity}px ${glowColor1},
               0 0 ${glowIntensity * 1.5}px ${glowColor2}
             `;
           } else {
             // Single glow for moderate speed
-            currentMeme.style.boxShadow = `0 0 ${glowIntensity}px ${glowColor1}`;
+            newImage.style.boxShadow = `0 0 ${glowIntensity}px ${glowColor1}`;
           }
         } else {
-          currentMeme.style.boxShadow = 'none';
+          newImage.style.boxShadow = 'none';
         }
         
         // Add subtle blur effect for very high intensity
         if (intensity > 0.9) {
           const blurAmount = (intensity - 0.9) * 2; // 0 to 0.2px blur
-          currentMeme.style.filter += ` blur(${blurAmount}px)`;
+          newImage.style.filter += ` blur(${blurAmount}px)`;
         }
         
         // Add dynamic animation keyframes that get crazier for fast music
@@ -738,26 +782,26 @@
           const animationSpeed = 400 / (intensity * speedMultiplier); // Faster animations for fast music
           if (speedMultiplier > 1.8) {
             // Very fast music - use glitch effect
-            currentMeme.style.animation = `extremeGlitch ${animationSpeed}ms infinite`;
+            newImage.style.animation = `extremeGlitch ${animationSpeed}ms infinite`;
           } else if (speedMultiplier > 1.3) {
             // Fast music - intense pulse
-            currentMeme.style.animation = `extremePulse ${animationSpeed}ms infinite alternate`;
+            newImage.style.animation = `extremePulse ${animationSpeed}ms infinite alternate`;
           } else {
             // Moderate music - gentle pulse
-            currentMeme.style.animation = `extremePulse ${animationSpeed * 1.5}ms infinite alternate`;
+            newImage.style.animation = `extremePulse ${animationSpeed * 1.5}ms infinite alternate`;
           }
         } else {
-          currentMeme.style.animation = 'none';
+          newImage.style.animation = 'none';
         }
         
         // Reset effects after a short time
         setTimeout(() => {
-          currentMeme.style.transform = 'scale(1) rotate(0deg) translate(0px, 0px)';
-          currentMeme.style.filter = 'brightness(1) contrast(1) saturate(1) hue-rotate(0deg) blur(0px)';
-          currentMeme.style.boxShadow = 'none';
-          currentMeme.style.animation = 'none';
+          newImage.style.transform = 'scale(1) rotate(0deg) translate(0px, 0px)';
+          newImage.style.filter = 'brightness(1) contrast(1) saturate(1) hue-rotate(0deg) blur(0px)';
+          newImage.style.boxShadow = 'none';
+          newImage.style.animation = 'none';
         }, 300);
-      }, 200); // Smoother transitions for musical feel
+      }, 100); // Faster transition since images are already loaded
     }
   </script>
 </body>
