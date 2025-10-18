@@ -587,6 +587,52 @@
       return finalIntensity;
     }
 
+    // Function to show silence indicator
+    function showSilenceIndicator(silenceInfo) {
+      // Create or update silence indicator
+      let silenceIndicator = document.getElementById('silence-indicator');
+      if (!silenceIndicator) {
+        silenceIndicator = document.createElement('div');
+        silenceIndicator.id = 'silence-indicator';
+        silenceIndicator.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          color: #ffffff;
+          font-family: 'Courier New', monospace;
+          font-size: 24px;
+          text-align: center;
+          z-index: 1000;
+          background: rgba(0, 0, 0, 0.8);
+          padding: 20px 40px;
+          border-radius: 10px;
+          border: 2px solid #ffffff;
+          box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        `;
+        document.body.appendChild(silenceIndicator);
+      }
+      
+      // Update silence indicator content
+      const timeInSilence = silenceInfo.timeInSilence || 0;
+      const remainingTime = Math.max(0, silenceInfo.period.duration - timeInSilence);
+      silenceIndicator.innerHTML = `
+        <div style="font-size: 18px; margin-bottom: 10px;">🔇 SILENT PERIOD</div>
+        <div style="font-size: 14px; opacity: 0.8;">Duration: ${silenceInfo.period.duration.toFixed(1)}s</div>
+        <div style="font-size: 14px; opacity: 0.8;">Remaining: ${remainingTime.toFixed(1)}s</div>
+      `;
+      
+      silenceIndicator.style.display = 'block';
+    }
+
+    // Function to hide silence indicator
+    function hideSilenceIndicator() {
+      const silenceIndicator = document.getElementById('silence-indicator');
+      if (silenceIndicator) {
+        silenceIndicator.style.display = 'none';
+      }
+    }
+
     function toggleStart() {
       if (isPlaying) {
         pause();
@@ -686,32 +732,37 @@
       const rhythmSpeed = audioState.rhythmSpeed;
       const interval = audioState.interval;
       
-      // SILENCE DETECTION - Check if no sound is playing
-      const silenceThreshold = 0.01; // Very low energy indicates silence
-      const isSilent = energy < silenceThreshold && intensity < 0.05;
-      
-      if (isSilent) {
-        console.log(`🔇 SILENCE DETECTED - Time: ${currentTime.toFixed(1)}s, Energy: ${energy.toFixed(3)}, Intensity: ${intensity.toFixed(3)}`);
+        // SILENCE DETECTION - Use the new silence detection system
+        const silenceInfo = getSilenceInfo(currentTime);
         
-        // During silence, fade out the current image and don't change images
-        if (currentVisibleImage) {
-          currentVisibleImage.style.opacity = '0.3'; // Fade to 30% opacity during silence
-          currentVisibleImage.style.filter = 'brightness(0.5) contrast(0.7) saturate(0.5)'; // Make it more subtle
-          currentVisibleImage.style.boxShadow = '0 0 10px rgba(255, 0, 150, 0.1)'; // Very subtle glow
-          currentVisibleImage.style.animation = 'none'; // Stop animations during silence
+        if (silenceInfo.isSilent) {
+          console.log(`🔇 SILENT PERIOD DETECTED - Time: ${currentTime.toFixed(1)}s, Period: ${silenceInfo.period.start.toFixed(1)}s-${silenceInfo.period.end.toFixed(1)}s, Duration: ${silenceInfo.period.duration.toFixed(1)}s`);
+          
+          // During silence, hide the current image completely
+          if (currentVisibleImage) {
+            currentVisibleImage.style.display = 'none'; // Hide image completely during silence
+            currentVisibleImage.style.opacity = '0'; // Ensure it's invisible
+            currentVisibleImage.style.animation = 'none'; // Stop animations during silence
+          }
+          
+          // Show silence indicator
+          showSilenceIndicator(silenceInfo);
+          
+          // Continue the loop but don't change images
+          animationId = requestAnimationFrame(startRhythmDisplay);
+          return;
         }
         
-        // Continue the loop but don't change images
-        animationId = requestAnimationFrame(startRhythmDisplay);
-        return;
-      }
-      
-      // RESTORE IMAGE VISIBILITY when sound returns
-      if (currentVisibleImage && currentVisibleImage.style.opacity === '0.3') {
-        currentVisibleImage.style.opacity = '1'; // Restore full opacity
-        currentVisibleImage.style.filter = 'brightness(1) contrast(1) saturate(1)'; // Restore normal appearance
-        currentVisibleImage.style.boxShadow = '0 0 20px rgba(255, 0, 150, 0.3)'; // Restore normal glow
-      }
+        // RESTORE IMAGE VISIBILITY when sound returns
+        if (currentVisibleImage && currentVisibleImage.style.display === 'none') {
+          currentVisibleImage.style.display = 'block'; // Show image again
+          currentVisibleImage.style.opacity = '1'; // Restore full opacity
+          currentVisibleImage.style.filter = 'brightness(1) contrast(1) saturate(1)'; // Restore normal appearance
+          currentVisibleImage.style.boxShadow = '0 0 20px rgba(255, 0, 150, 0.3)'; // Restore normal glow
+        }
+        
+        // Hide silence indicator when sound returns
+        hideSilenceIndicator();
       
       console.log(`🎵 Rhythm display running - Time: ${currentTime.toFixed(1)}s, Intensity: ${intensity.toFixed(3)}, Energy: ${energy.toFixed(3)}`);
       
