@@ -161,6 +161,56 @@ def analyze_audio(audio_file):
     print(f"  Average energy: {np.mean(rms):.3f}")
     print(f"  Energy range: {np.min(rms):.3f} - {np.max(rms):.3f}")
     
+    # 4.5. SILENCE DETECTION
+    print(f"\n🔇 Silence Detection:")
+    
+    # Calculate silence threshold (very low energy)
+    silence_threshold = np.mean(rms) * 0.1  # 10% of average energy
+    min_silence_duration = 0.5  # Minimum 0.5 seconds to be considered silence
+    
+    # Find silent periods
+    silent_periods = []
+    in_silence = False
+    silence_start = 0
+    
+    for i, (time, energy) in enumerate(zip(times, rms)):
+        if energy < silence_threshold:
+            if not in_silence:
+                in_silence = True
+                silence_start = time
+        else:
+            if in_silence:
+                silence_duration = time - silence_start
+                if silence_duration >= min_silence_duration:
+                    silent_periods.append({
+                        'start': float(silence_start),
+                        'end': float(time),
+                        'duration': float(silence_duration),
+                        'avg_energy': float(np.mean(rms[int(silence_start * sr / hop_length):int(time * sr / hop_length)]))
+                    })
+                in_silence = False
+    
+    # Handle case where silence continues to end of track
+    if in_silence:
+        silence_duration = duration - silence_start
+        if silence_duration >= min_silence_duration:
+            silent_periods.append({
+                'start': float(silence_start),
+                'end': float(duration),
+                'duration': float(silence_duration),
+                'avg_energy': float(np.mean(rms[int(silence_start * sr / hop_length):]))
+            })
+    
+    print(f"  Silence threshold: {silence_threshold:.4f}")
+    print(f"  Silent periods: {len(silent_periods)}")
+    if silent_periods:
+        total_silence = sum(period['duration'] for period in silent_periods)
+        print(f"  Total silence time: {total_silence:.2f}s ({total_silence/duration*100:.1f}% of track)")
+        print(f"  Longest silence: {max(period['duration'] for period in silent_periods):.2f}s")
+        print(f"  Shortest silence: {min(period['duration'] for period in silent_periods):.2f}s")
+    else:
+        print(f"  No significant silent periods detected")
+    
     # 5. SPECTRAL ANALYSIS
     print(f"\n🌈 Spectral Analysis:")
     
@@ -232,6 +282,11 @@ const energyPeaks = [
 {chr(10).join([f"    {{ time: {peak['time']:.3f}, energy: {peak['energy']:.3f} }}" + ("," if i < len(energy_peaks) - 1 else "") for i, peak in enumerate(energy_peaks)])}
 ];
 
+// Silent periods (no music playing)
+const silentPeriods = [
+{chr(10).join([f"    {{ start: {period['start']:.3f}, end: {period['end']:.3f}, duration: {period['duration']:.3f}, avgEnergy: {period['avg_energy']:.4f} }}" + ("," if i < len(silent_periods) - 1 else "") for i, period in enumerate(silent_periods)])}
+];
+
 // Analysis statistics
 const audioStats = {{
     duration: {duration:.2f},
@@ -239,9 +294,11 @@ const audioStats = {{
     averageBPM: {len(beats) * 60 / duration:.1f},
     tempoChanges: {len(tempo_changes)},
     energyPeaks: {len(energy_peaks)},
+    silentPeriods: {len(silent_periods)},
     rhythmConsistency: {rhythm_consistency:.2f},
     meanInterval: {mean_interval:.3f},
-    energyRange: [{np.min(rms):.3f}, {np.max(rms):.3f}]
+    energyRange: [{np.min(rms):.3f}, {np.max(rms):.3f}],
+    silenceThreshold: {silence_threshold:.4f}
 }};
 
 // Enhanced function to get current audio state
@@ -278,6 +335,25 @@ function getCurrentAudioState(currentTime) {{
     }};
 }}
 
+// Function to check if current time is in a silent period
+function isInSilentPeriod(currentTime) {{
+    for (let period of silentPeriods) {{
+        if (currentTime >= period.start && currentTime <= period.end) {{
+            return {{
+                isSilent: true,
+                period: period,
+                timeInSilence: currentTime - period.start
+            }};
+        }}
+    }}
+    return {{ isSilent: false }};
+}}
+
+// Function to get silence information for current time
+function getSilenceInfo(currentTime) {{
+    return isInSilentPeriod(currentTime);
+}}
+
 console.log("Comprehensive audio analysis loaded:", audioStats);"""
     
     print("\n📋 COMPREHENSIVE ANALYSIS RESULTS:")
@@ -296,15 +372,18 @@ console.log("Comprehensive audio analysis loaded:", audioStats);"""
             'beats': comprehensive_beats,
             'tempo_changes': tempo_changes,
             'energy_peaks': energy_peaks,
+            'silent_periods': silent_periods,
             'stats': {
                 'duration': duration,
                 'total_beats': len(beats),
                 'average_bpm': len(beats) * 60 / duration,
                 'tempo_changes': len(tempo_changes),
                 'energy_peaks': len(energy_peaks),
+                'silent_periods': len(silent_periods),
                 'rhythm_consistency': rhythm_consistency,
                 'mean_interval': mean_interval,
-                'energy_range': [float(np.min(rms)), float(np.max(rms))]
+                'energy_range': [float(np.min(rms)), float(np.max(rms))],
+                'silence_threshold': float(silence_threshold)
             }
         }, f, indent=2)
     
@@ -317,6 +396,7 @@ console.log("Comprehensive audio analysis loaded:", audioStats);"""
     print(f"📄 HTML file updated with new audio source")
     print(f"🎵 Audio file analyzed: {audio_file}")
     print(f"⏱️  Duration: {duration:.2f}s | Beats: {len(beats)} | BPM: {len(beats) * 60 / duration:.1f}")
+    print(f"🔇 Silent periods: {len(silent_periods)} | Threshold: {silence_threshold:.4f}")
     
     return js_code
 

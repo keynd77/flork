@@ -413,6 +413,12 @@ const energyPeaks = [
     { time: 80.341, energy: 0.175 }
 ];
 
+// Silent periods (no music playing)
+const silentPeriods = [
+    { start: 7.988, end: 9.242, duration: 1.254, avgEnergy: 0.0001 },
+    { start: 74.397, end: 77.090, duration: 2.694, avgEnergy: 0.0001 }
+];
+
 // Analysis statistics
 const audioStats = {
     duration: 83.45,
@@ -420,9 +426,11 @@ const audioStats = {
     averageBPM: 153.9,
     tempoChanges: 34,
     energyPeaks: 152,
+    silentPeriods: 2,
     rhythmConsistency: 0.57,
     meanInterval: 0.333,
-    energyRange: [0.000, 0.257]
+    energyRange: [0.000, 0.257],
+    silenceThreshold: 0.0102
 };
 
 // Enhanced function to get current audio state
@@ -457,6 +465,25 @@ function getCurrentAudioState(currentTime) {
         interval: closestBeat.interval,
         tempoChange: currentTempo
     };
+}
+
+// Function to check if current time is in a silent period
+function isInSilentPeriod(currentTime) {
+    for (let period of silentPeriods) {
+        if (currentTime >= period.start && currentTime <= period.end) {
+            return {
+                isSilent: true,
+                period: period,
+                timeInSilence: currentTime - period.start
+            };
+        }
+    }
+    return { isSilent: false };
+}
+
+// Function to get silence information for current time
+function getSilenceInfo(currentTime) {
+    return isInSilentPeriod(currentTime);
 }
 
 console.log("Comprehensive audio analysis loaded:", audioStats);
