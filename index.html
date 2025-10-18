@@ -403,7 +403,7 @@
     let allImageElements = [];
     let currentVisibleImage = null;
     let effectTimeouts = {}; // Store timeouts for each image to clear them
-    let currentZIndex = 100; // Starting z-index for images (above container z-index: 10)
+    let currentZIndex = 200; // Starting z-index for images (above button z-index: 100)
 
     // Generate the correct filename based on index
     function getImagePath(index) {
@@ -671,18 +671,25 @@
       // Get intensity from timing map based on actual audio time
       const intensity = getCurrentIntensity(currentTime);
       
-      // Calculate display time based on intensity and rhythm speed - DYNAMIC differences
-      // Higher intensity = shorter display time (faster changes)
-      const minDisplayTime = 100; // Fastest (100ms) - very fast during intense parts
-      const maxDisplayTime = 800; // Slowest (800ms) - slower during quiet parts
-      
-      // Get rhythm speed for speed-based timing
+      // Calculate display time based on comprehensive music analysis - MUSICAL differences
       const audioState = getCurrentAudioState(currentTime);
-      const speedMultiplier = Math.min(2.0, audioState.rhythmSpeed);
+      const energy = audioState.energy;
+      const bpm = audioState.bpm;
+      const rhythmSpeed = audioState.rhythmSpeed;
       
-      // Use speed-aware scaling for more dynamic feel
-      const speedAdjustedIntensity = intensity * speedMultiplier;
-      const displayTime = maxDisplayTime - (speedAdjustedIntensity * (maxDisplayTime - minDisplayTime));
+      // Base timing ranges
+      const minDisplayTime = 300; // Fastest (300ms) - still readable
+      const maxDisplayTime = 1200; // Slowest (1200ms) - more contemplative
+      
+      // Musical timing calculation
+      const energyFactor = 1 - (energy * 0.4); // High energy = faster changes
+      const bpmFactor = 1 - ((bpm - 100) / 200) * 0.3; // High BPM = faster changes
+      const rhythmFactor = 1 - ((rhythmSpeed - 1.0) * 0.2); // Fast rhythm = faster changes
+      const intensityFactor = 1 - (intensity * 0.3); // High intensity = faster changes
+      
+      // Combine all factors for musical timing
+      const combinedFactor = (energyFactor + bpmFactor + rhythmFactor + intensityFactor) / 4;
+      const displayTime = minDisplayTime + (combinedFactor * (maxDisplayTime - minDisplayTime));
       
       // Debug logging (remove this later)
       if (Math.floor(currentTime) !== Math.floor(currentTime - 0.1)) {
@@ -716,59 +723,102 @@
         const newImage = allImageElements[index];
         if (!newImage) return;
         
-        // DYNAMIC visual effects based on comprehensive audio analysis
-        // More dramatic scaling when music is faster
-        const speedMultiplier = Math.min(2.0, audioState.rhythmSpeed); // Boost effects for fast music
-        const baseScale = 1 + (intensity * 0.4 * speedMultiplier); // Scale from 1.0 to 1.8 for fast music
-        const scale = baseScale;
+        // Ensure this image has the highest z-index during effects
+        currentZIndex += 1;
+        newImage.style.zIndex = currentZIndex;
+        console.log(`🎨 Image ${index} z-index: ${currentZIndex}`);
         
-        // More dramatic brightness and contrast for fast music
-        const brightness = 1 + (intensity * 0.6 * speedMultiplier); // Brightness from 1.0 to 2.2 for fast music
-        const contrast = 1 + (intensity * 0.4 * speedMultiplier); // Contrast from 1.0 to 1.8 for fast music
-        const saturation = 1 + (intensity * 0.5 * speedMultiplier); // Saturation from 1.0 to 2.0 for fast music
+        // VERSATILE visual effects based on comprehensive music analysis
+        const speedMultiplier = Math.min(2.0, audioState.rhythmSpeed);
+        const energy = audioState.energy;
+        const bpm = audioState.bpm;
+        const rhythmSpeed = audioState.rhythmSpeed;
         
-        // More dramatic rotation when music is faster
-        const rotationDirection = Math.random() > 0.5 ? 1 : -1;
-        const baseRotation = (audioState.rhythmSpeed - 1.0) * 6 * rotationDirection * speedMultiplier; // -12 to +12 degrees for fast music
-        const randomRotation = (Math.random() - 0.5) * 4 * intensity * speedMultiplier; // Random -4 to +4 degrees for fast music
-        const rotation = baseRotation + randomRotation;
+        // SCALE: More musical scaling based on energy and BPM
+        const energyScale = 1 + (energy * 0.3); // Energy-based scaling
+        const bpmScale = 1 + ((bpm - 100) / 200) * 0.2; // BPM-based scaling
+        const intensityScale = 1 + (intensity * 0.2); // Intensity-based scaling
+        const scale = energyScale * bpmScale * intensityScale;
         
-        // More dramatic hue shift for fast music
-        const baseHueShift = (audioState.bpm - 100) * 0.8 * speedMultiplier; // -160 to +160 degrees for fast music
-        const randomHueShift = (Math.random() - 0.5) * 40 * intensity * speedMultiplier; // Random hue shifts
-        const hueShift = baseHueShift + randomHueShift;
+        // BRIGHTNESS & CONTRAST: Musical brightness based on energy peaks
+        const energyBrightness = 1 + (energy * 0.4); // Energy-based brightness
+        const bpmBrightness = 1 + ((bpm - 100) / 300) * 0.3; // BPM-based brightness
+        const brightness = Math.min(2.0, energyBrightness * bpmBrightness);
         
-        // More dramatic position movement for fast music
+        const energyContrast = 1 + (energy * 0.2); // Energy-based contrast
+        const contrast = Math.min(1.5, energyContrast);
+        
+        // SATURATION: Dynamic saturation based on rhythm speed
+        const rhythmSaturation = 1 + ((rhythmSpeed - 1.0) * 0.3); // Rhythm-based saturation
+        const energySaturation = 1 + (energy * 0.2); // Energy-based saturation
+        const saturation = Math.min(1.8, rhythmSaturation * energySaturation);
+        
+        // ROTATION: More sophisticated rotation system
+        const beatRotation = (intensity * 15) * (Math.random() > 0.5 ? 1 : -1); // Beat-based rotation
+        const bpmRotation = ((bpm - 100) / 50) * 8; // BPM-based rotation
+        const energyRotation = energy * 10 * (Math.random() > 0.5 ? 1 : -1); // Energy-based rotation
+        const rhythmRotation = (rhythmSpeed - 1.0) * 12 * (Math.random() > 0.5 ? 1 : -1); // Rhythm-based rotation
+        
+        const rotation = beatRotation + bpmRotation + energyRotation + rhythmRotation;
+        
+        // HUE SHIFT: Musical color changes
+        const bpmHue = (bpm - 100) * 1.2; // BPM-based hue
+        const energyHue = energy * 60 * (Math.random() > 0.5 ? 1 : -1); // Energy-based hue
+        const rhythmHue = (rhythmSpeed - 1.0) * 40 * (Math.random() > 0.5 ? 1 : -1); // Rhythm-based hue
+        const hueShift = bpmHue + energyHue + rhythmHue;
+        
+        // POSITION: Musical movement based on multiple factors
         const screenWidth = window.innerWidth;
         const screenHeight = window.innerHeight;
-        const maxOffsetX = (screenWidth - 400) / 3; // Larger offset for fast music
-        const maxOffsetY = (screenHeight - 400) / 3;
+        const maxOffsetX = (screenWidth - 400) / 4;
+        const maxOffsetY = (screenHeight - 400) / 4;
         
-        const randomX = (Math.random() - 0.5) * maxOffsetX * intensity * speedMultiplier; // More movement for fast music
-        const randomY = (Math.random() - 0.5) * maxOffsetY * intensity * speedMultiplier;
+        // Energy-based movement
+        const energyX = (Math.random() - 0.5) * maxOffsetX * energy;
+        const energyY = (Math.random() - 0.5) * maxOffsetY * energy;
+        
+        // BPM-based movement
+        const bpmX = (Math.random() - 0.5) * maxOffsetX * ((bpm - 100) / 200);
+        const bpmY = (Math.random() - 0.5) * maxOffsetY * ((bpm - 100) / 200);
+        
+        // Rhythm-based movement
+        const rhythmX = (Math.random() - 0.5) * maxOffsetX * (rhythmSpeed - 1.0);
+        const rhythmY = (Math.random() - 0.5) * maxOffsetY * (rhythmSpeed - 1.0);
+        
+        const randomX = energyX + bpmX + rhythmX;
+        const randomY = energyY + bpmY + rhythmY;
         
         // Apply extreme transforms (preserve centering)
         newImage.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${rotation}deg) translate(${randomX}px, ${randomY}px)`;
         newImage.style.filter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation}) hue-rotate(${hueShift}deg)`;
         
-        // Dynamic glow effects that get crazier for fast music
-        if (intensity > 0.6) {
-          const glowIntensity = intensity * 30 * speedMultiplier; // Bigger glow for fast music
-          const glowColor1 = `rgba(255, 0, 255, ${intensity * 0.4})`;
-          const glowColor2 = `rgba(0, 255, 255, ${intensity * 0.3})`;
+        // Musical glow effects based on energy and BPM
+        if (energy > 0.3 || intensity > 0.5) {
+          const energyGlow = energy * 25; // Energy-based glow size
+          const bpmGlow = ((bpm - 100) / 100) * 15; // BPM-based glow size
+          const intensityGlow = intensity * 20; // Intensity-based glow size
+          const glowIntensity = energyGlow + bpmGlow + intensityGlow;
           
-          if (speedMultiplier > 1.5) {
-            // Multiple glow layers for very fast music
+          // Color variations based on BPM and energy
+          const hue1 = (bpm / 2) % 360; // BPM-based hue
+          const hue2 = (energy * 180 + 180) % 360; // Energy-based hue
+          
+          const glowColor1 = `hsla(${hue1}, 70%, 50%, ${Math.min(0.6, energy * 0.8)})`;
+          const glowColor2 = `hsla(${hue2}, 70%, 50%, ${Math.min(0.4, intensity * 0.6)})`;
+          
+          if (energy > 0.6 || rhythmSpeed > 1.5) {
+            // Multiple glow layers for high energy/fast rhythm
             newImage.style.boxShadow = `
               0 0 ${glowIntensity}px ${glowColor1},
-              0 0 ${glowIntensity * 1.5}px ${glowColor2}
+              0 0 ${glowIntensity * 1.5}px ${glowColor2},
+              0 0 ${glowIntensity * 2}px ${glowColor1}
             `;
           } else {
-            // Single glow for moderate speed
+            // Single glow for moderate energy
             newImage.style.boxShadow = `0 0 ${glowIntensity}px ${glowColor1}`;
           }
         } else {
-          newImage.style.boxShadow = 'none';
+          newImage.style.boxShadow = '0 0 20px rgba(255, 0, 150, 0.3)'; // Default subtle glow
         }
         
         // Add subtle blur effect for very high intensity
