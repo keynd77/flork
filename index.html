@@ -761,15 +761,24 @@
       const interval = audioState.interval;
       const beatType = audioState.type;
       
-      // EXTREME SCALE: Much more aggressive scaling for fast music
-      const energyScale = 1 + (energy * 0.8); // Energy-based scaling (0.8x range - was 0.4x)
-      const bpmScale = 1 + ((bpm - 135) / 200) * 0.6; // BPM-based scaling (0.6x range - was 0.3x)
-      const intensityScale = 1 + (intensity * 0.6); // Intensity-based scaling (0.6x range - was 0.3x)
-      const rhythmScale = 1 + ((rhythmSpeed - 1.0) * 0.5); // Rhythm speed scaling (0.5x range - was 0.2x)
-      const beatTypeScale = beatType === 'strong' ? 1.3 : 1.0; // Strong beats get MUCH bigger (was 1.15)
-      const intervalScale = interval ? 1 + ((0.5 - interval) * 0.6) : 1.0; // Fast intervals = MUCH bigger (was 0.3x)
+      // ENHANCED SCALE: More dramatic scaling using same factors as glow effects
+      const energyScale = 1 + (energy * 1.2); // Energy-based scaling (1.2x range - was 0.8x) - MORE DRAMATIC
+      const bpmScale = 1 + ((bpm - 135) / 200) * 0.8; // BPM-based scaling (0.8x range - was 0.6x) - MORE DRAMATIC
+      const intensityScale = 1 + (intensity * 0.9); // Intensity-based scaling (0.9x range - was 0.6x) - MORE DRAMATIC
+      const rhythmScale = 1 + ((rhythmSpeed - 1.0) * 0.7); // Rhythm speed scaling (0.7x range - was 0.5x) - MORE DRAMATIC
+      const beatTypeScale = beatType === 'strong' ? 1.4 : 1.0; // Strong beats get EVEN BIGGER (1.4x - was 1.3x)
+      const intervalScale = interval ? 1 + ((0.5 - interval) * 0.8) : 1.0; // Fast intervals = EVEN BIGGER (0.8x - was 0.6x)
       
-      const scale = energyScale * bpmScale * intensityScale * rhythmScale * beatTypeScale * intervalScale;
+      // Additional scaling factors that match the glow effect responsiveness
+      const glowBasedScale = 1 + (Math.min(0.3, (energy + intensity + (rhythmSpeed - 1.0)) / 3)); // Combined glow factors
+      const beatResponseScale = beatType === 'strong' ? 1.15 : 1.0; // Extra boost for strong beats
+      
+      const scale = energyScale * bpmScale * intensityScale * rhythmScale * beatTypeScale * intervalScale * glowBasedScale * beatResponseScale;
+      
+      // Debug logging for scaling (remove this later if not needed)
+      if (Math.floor(currentTime) !== Math.floor(currentTime - 0.1)) {
+        console.log(`📏 Scaling - Energy: ${energyScale.toFixed(2)}, BPM: ${bpmScale.toFixed(2)}, Intensity: ${intensityScale.toFixed(2)}, Rhythm: ${rhythmScale.toFixed(2)}, Beat: ${beatTypeScale.toFixed(2)}, Glow: ${glowBasedScale.toFixed(2)}, Final: ${scale.toFixed(2)}`);
+      }
         
       // EXTREME BRIGHTNESS & CONTRAST: Much more aggressive for fast music
       const energyBrightness = 1 + (energy * 1.0); // Energy-based brightness (1.0x range - was 0.5x)
